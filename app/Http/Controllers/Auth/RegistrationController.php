@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\RegisterRequest;
 use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -47,7 +46,10 @@ class RegistrationController extends Controller
         ]);
 
         return response()->json([
-            'meta' => object_meta(Response::HTTP_CREATED, "success", "Account has ben Registered"),
+            'meta' => object_meta(
+                Response::HTTP_CREATED, 
+                "success", 
+                "Account has ben Registered"),
             'data' => $user
         ], Response::HTTP_CREATED);
     }

@@ -38,7 +38,10 @@ class LoginController extends Controller
         if (!$token =  Auth::attempt(request()->only('email', 'password'))) {
             $data['is_success'] = 'false';
             return response()->json([
-                'meta' => object_meta(Response::HTTP_UNAUTHORIZED, "failed", "Login Failed"),
+                'meta' => object_meta(
+                    Response::HTTP_UNAUTHORIZED, 
+                    "failed", 
+                    "Login Failed"),
                 'data' => $data
             ], Response::HTTP_UNAUTHORIZED);
         }
@@ -48,7 +51,10 @@ class LoginController extends Controller
         $data['token'] = $token;
 
         return response()->json([
-            'meta' => object_meta(Response::HTTP_OK, "success", "Login Successfuly"),
+            'meta' => object_meta(
+                Response::HTTP_OK, 
+                "success", 
+                "Login Successfuly"),
             'data' => $data
         ], Response::HTTP_OK);
     }

@@ -20,7 +20,10 @@ class LogoutController extends Controller
         Auth::logout();
         $data['is_success'] = true;
         return response()->json([
-            'meta' => object_meta(Response::HTTP_OK, "success", "Logout"),
+            'meta' => object_meta(
+                Response::HTTP_OK, 
+                "success", 
+                "Logout"),
             'data' => $data
         ], Response::HTTP_OK);
     }
