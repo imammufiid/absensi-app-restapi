@@ -18,10 +18,10 @@ class LogoutController extends Controller
     public function __invoke(Request $request)
     {
         Auth::logout();
-        $is_success = true;
+        $data['is_success'] = true;
         return response()->json([
             'meta' => object_meta(Response::HTTP_OK, "success", "Logout"),
-            'data' => $is_success
+            'data' => $data
         ], Response::HTTP_OK);
     }
 }
