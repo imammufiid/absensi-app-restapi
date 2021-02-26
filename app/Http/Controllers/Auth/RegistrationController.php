@@ -18,7 +18,6 @@ class RegistrationController extends Controller
      */
     public function __invoke(RegisterRequest $request)
     {
-        echo "tes";
         $user = User::create([
             'name' => request('name'),
             'email' => request('email'),
