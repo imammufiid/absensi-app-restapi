@@ -17,7 +17,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Display a listing of the resource.
+     * Display a listing of the data attedance.
      *
      * @return \Illuminate\Http\Response
      */
@@ -64,7 +64,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Employe has been comes.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
@@ -120,7 +120,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified data attendance.
      *
      * @param  \App\Attendence  $attendence
      * @return \Illuminate\Http\Response
@@ -185,7 +185,7 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Update the specified resource in storage.
+     * Employe has been go home.
      *
      * @param  \Illuminate\Http\Request  $request
      * @param  \App\Attendence  $attendence
