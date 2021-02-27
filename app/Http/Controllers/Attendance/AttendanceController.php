@@ -70,7 +70,62 @@ class AttendanceController extends Controller
      */
     public function show(Request $request)
     {
-        //
+        try {
+            $validator = Validator::make($request->all(), [
+                'id_employe' => "required",
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_BAD_REQUEST,
+                        "failed",
+                        "Failed"
+                    ),
+                    'data' => $validator->errors()
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            $idEmploye = request("id_employe");
+            $today = date("d-M-Y");
+
+            $attendanceToday = Attendence::where('user_id', $idEmploye)
+                ->where('date', $today)->first();
+
+            if ($attendanceToday == null) {
+                $data['attendance'] = null;
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_NOT_FOUND,
+                        "failed",
+                        "Data Not Found"
+                    ),
+                    'data' => $data
+                ], Response::HTTP_NOT_FOUND);
+            } else {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_OK,
+                        "success",
+                        "Attendance Today"
+                    ),
+                    'data' => $attendanceToday
+                ], Response::HTTP_OK);
+            }
+        } catch (Throwable $e) {
+            $data = [
+                "error" => $e
+            ];
+            return response()->json([
+                "meta" => object_meta(
+                    Response::HTTP_EXPECTATION_FAILED,
+                    "error",
+                    "Error Handling"
+                ),
+                "data" => $data
+            ], Response::HTTP_EXPECTATION_FAILED);
+        }
     }
 
     /**
