@@ -61,7 +61,7 @@ class Handler extends ExceptionHandler
                     "error",
                     $err["error"]
                 ),
-                'errors' => $err
+                'data' => $err
             ], Response::HTTP_UNAUTHORIZED);
         }
 
@@ -73,7 +73,7 @@ class Handler extends ExceptionHandler
                 "error", 
                 $err["error"]
             ),
-            'errors' => $err
+            'data' => $err
         ], Response::HTTP_UNPROCESSABLE_ENTITY);
     }
 }
