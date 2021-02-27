@@ -23,14 +23,44 @@ class AttendanceController extends Controller
      */
     public function index()
     {
-        return response()->json([
-            "meta" => object_meta(
-                Response::HTTP_BAD_REQUEST,
-                "error",
-                "Failed for Attendance"
-            ),
-            "data" => null
-        ], Response::HTTP_BAD_REQUEST);
+        $validator = Validator::make(request()->all(), [
+            "user_id"    => "required"
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'meta' => object_meta(
+                    Response::HTTP_BAD_REQUEST,
+                    "failed",
+                    "Failed"
+                ),
+                'data' => $validator->errors()
+            ], Response::HTTP_BAD_REQUEST);
+        }
+
+        $dataAttendance = Attendence::where("user_id", request("user_id"))->get();
+
+        if($dataAttendance != null) {
+            return response()->json([
+                "meta" => object_meta(
+                    Response::HTTP_OK,
+                    "success",
+                    "List of Data Attendance"
+                ),
+                "data" => $dataAttendance
+            ], Response::HTTP_OK);
+        } else {
+            return response()->json([
+                "meta" => object_meta(
+                    Response::HTTP_NOT_FOUND,
+                    "failed",
+                    "Failed for Attendance"
+                ),
+                "data" => null
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        
     }
 
     /**
@@ -164,7 +194,6 @@ class AttendanceController extends Controller
     public function gohome(Request $request)
     {
         try {
-
             // validation
             $validator = Validator::make($request->all(), [
                 "id"         => "required",
@@ -189,7 +218,7 @@ class AttendanceController extends Controller
 
             // data for updating
             $data = [
-                "time_gohome"   => date("H:i:s", $time),
+                "time_gohome" => date("H:i:s", $time),
             ];
 
             $attendance = Attendence::where('id', request("id"))
@@ -229,16 +258,5 @@ class AttendanceController extends Controller
                 "data" => $data
             ], Response::HTTP_BAD_REQUEST);
         }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Attendence  $attendence
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Attendence $attendence)
-    {
-        //
     }
 }
