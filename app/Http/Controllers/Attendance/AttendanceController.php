@@ -91,7 +91,7 @@ class AttendanceController extends Controller
             $time = time();
             $attendance = Attendence::create([
                 "user_id"       => $idEmploye,
-                "date"          => date("d-M-Y", $time),
+                "date"          => date("d-m-Y", $time),
                 "time_comes"    => date("H:i:s", $time),
                 "time_gohome"   => 0
             ]);
