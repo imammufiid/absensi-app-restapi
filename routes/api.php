@@ -25,6 +25,6 @@ Route::group([
 ], function() {
     Route::get('/', 'TaskController@index');
     Route::get('/show', 'TaskController@show');
-    Route::post('/mark', 'TaskController@markComplete');
+    Route::put('/mark', 'TaskController@markComplete');
     Route::post('/store', 'TaskController@store');
 });
