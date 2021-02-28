@@ -185,6 +185,67 @@ class TaskController extends Controller
      */
     public function markComplete(Request $request)
     {
-        //
+        try {
+            $validator = Validator::make($request->all(), [
+                'id_task'   => "required"
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_BAD_REQUEST,
+                        "failed",
+                        "Failed"
+                    ),
+                    'data' => $validator->errors()
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            $idTask = request('id_task') ;
+            if ($idTask == null) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_BAD_REQUEST,
+                        "failed",
+                        "Failed request"
+                    ),
+                    'data' => null
+                ], Response::HTTP_BAD_REQUEST);
+            } else {
+                $data = [
+                    'is_complete' => 1
+                ];
+                $task = Task::where("id", $idTask)->update($data);
+                if($task > 0) {
+                    return response()->json([
+                        'meta' => object_meta(
+                            Response::HTTP_OK,
+                            "success",
+                            "Task has completed"
+                        ),
+                        'data' => $task
+                    ], Response::HTTP_OK);
+                } else {
+                    return response()->json([
+                        'meta' => object_meta(
+                            Response::HTTP_NOT_FOUND,
+                            "failed",
+                            "Data Task Not Found"
+                        ),
+                        'data' => $task
+                    ], Response::HTTP_NOT_FOUND);
+                }
+
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'meta' => object_meta(
+                    Response::HTTP_SERVICE_UNAVAILABLE,
+                    "error",
+                    $e->getMessage()
+                ),
+                'data' => null
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
     }
 }
