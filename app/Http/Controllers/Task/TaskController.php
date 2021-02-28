@@ -127,9 +127,53 @@ class TaskController extends Controller
      * @param  \App\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function show(Task $task)
+    public function show(Request $request)
     {
-        //
+        try {
+            $idTask = request('id_task') ;
+            if ($idTask == null) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_BAD_REQUEST,
+                        "failed",
+                        "Failed request"
+                    ),
+                    'data' => null
+                ], Response::HTTP_BAD_REQUEST);
+            } else {
+
+                $task = Task::where("id", $idTask)->get();
+                if(empty($task)) {
+                    return response()->json([
+                        'meta' => object_meta(
+                            Response::HTTP_OK,
+                            "success",
+                            "This data Task"
+                        ),
+                        'data' => $task
+                    ], Response::HTTP_OK);
+                } else {
+                    return response()->json([
+                        'meta' => object_meta(
+                            Response::HTTP_NOT_FOUND,
+                            "failed",
+                            "Data Task Not Found"
+                        ),
+                        'data' => $task
+                    ], Response::HTTP_NOT_FOUND);
+                }
+
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'meta' => object_meta(
+                    Response::HTTP_SERVICE_UNAVAILABLE,
+                    "error",
+                    $e->getMessage()
+                ),
+                'data' => null
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
     }
 
     /**
