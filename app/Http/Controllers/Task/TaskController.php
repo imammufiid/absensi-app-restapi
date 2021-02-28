@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Task;
 
 use App\Http\Controllers\Controller;
 use App\Task;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
 class TaskController extends Controller
@@ -25,14 +27,12 @@ class TaskController extends Controller
 
         if ($isAdmin != null) {
             // admin
-            // data datetime db d-M-Y H:i:s (data type datetime)
-            // data date filter d-M-Y
-            $task = Task::where("DATE_FORMAT(datetime, '%d-%m-%Y')", '\'' . $filterDate . '\'')
+            $task = Task::where('datetime', 'LIKE', '%' . $filterDate . '%')
                 ->get();
         } else {
             // employe
-            $task = Task::where("user_id", $userId)
-                ->where("DATE_FORMAT(datetime, '%d-%m-%Y')", '\'' . $filterDate . '\'', false)
+            $task = Task::where('datetime', 'LIKE', '%' . $filterDate . '%')
+                ->where('user_id', $userId)
                 ->get();
         }
 
@@ -65,7 +65,60 @@ class TaskController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        try {
+            $validator = Validator::make($request->all(), [
+                'user_id'   => "required",
+                'task'      => "required"
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_BAD_REQUEST,
+                        "failed",
+                        "Failed"
+                    ),
+                    'data' => $validator->errors()
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            if (request('is_admin') == 1) {
+
+                $task = Task::create([
+                    'user_id'       => request('user_id'),
+                    'task'          => request('task'),
+                    'is_complete'   => 0,
+                    'datetime'      => date('d-m-Y H:i:s')
+                ]);
+
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_CREATED,
+                        "success",
+                        "Task has been Added"
+                    ),
+                    'data' => $task
+                ], Response::HTTP_CREATED);
+            } else {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_FORBIDDEN,
+                        "failed",
+                        "Access Forbidden"
+                    ),
+                    'data' => null
+                ], Response::HTTP_FORBIDDEN);
+            }
+        } catch (Exception $e) {
+            return response()->json([
+                'meta' => object_meta(
+                    Response::HTTP_SERVICE_UNAVAILABLE,
+                    "error",
+                    $e->getMessage()
+                ),
+                'data' => null
+            ], Response::HTTP_SERVICE_UNAVAILABLE);
+        }
     }
 
     /**
