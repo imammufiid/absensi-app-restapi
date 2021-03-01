@@ -41,3 +41,11 @@ Route::group([
     Route::put("/gohome", 'AttendanceController@gohome');
     Route::get("/show", 'AttendanceController@show');
 });
+
+Route::group([
+    "namespace" => 'User',
+    "prefix"    => 'user'
+], function() {
+    Route::get('/', 'UserController@index');
+    Route::post('/save', 'UserController@update');
+});
