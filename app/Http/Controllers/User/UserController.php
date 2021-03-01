@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
 class UserController extends Controller
@@ -31,7 +32,7 @@ class UserController extends Controller
                     'data' => null
                 ], Response::HTTP_BAD_REQUEST);
             } else {
-                
+
 
                 $user = User::where("id", $userId)->first();
                 if (empty($user)) {
@@ -54,7 +55,7 @@ class UserController extends Controller
                     ], Response::HTTP_OK);
                 }
             }
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             return response()->json([
                 'meta' => object_meta(
                     Response::HTTP_EXPECTATION_FAILED,
@@ -64,7 +65,6 @@ class UserController extends Controller
                 'data' => null
             ], Response::HTTP_EXPECTATION_FAILED);
         }
-        
     }
 
     /**
@@ -96,9 +96,61 @@ class UserController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $userId = request("id");
+        $userImg = request("image");
+        if ($userId == null) {
+            return response()->json([
+                'meta' => object_meta(
+                    Response::HTTP_BAD_REQUEST,
+                    "failed",
+                    "Failed Bad Request"
+                ),
+                'data' => null
+            ], Response::HTTP_BAD_REQUEST);
+        } else {
+            $pathImg = $_SERVER['DOCUMENT_ROOT'] . "/img/image_user";
+
+            $currentData = User::where("id", $userId)->first();
+            if ($userImg != null) {
+                unlink($pathImg . $currentData->image);
+                $userImgName = time() . "_" . $userImg->getClientOriginalName();
+                $destSave = 'img/image_user';
+                $userImg->move($destSave, $userImgName);
+            } else {
+                $userImgName = $currentData->image;
+            }
+
+            $data = [
+                'name'      => request("name"),
+                'password'  => request("password"),
+                "image"     => $userImgName
+            ];
+
+            $dataUpdate = User::where("id", $userId)
+                ->update($data);
+
+            if ($dataUpdate > 0) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_OK,
+                        "success",
+                        "Success Update Data"
+                    ),
+                    'data' => $dataUpdate
+                ], Response::HTTP_OK);
+            } else {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_UNPROCESSABLE_ENTITY,
+                        "failed",
+                        "Failed Update Data"
+                    ),
+                    'data' => null
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+            }
+        }
     }
 
     /**
