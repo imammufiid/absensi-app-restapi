@@ -19,6 +19,7 @@ class CreateUsersTable extends Migration
             $table->string('nik')->unique();
             $table->string('email')->unique();
             $table->tinyInteger('is_admin');
+            $table->string('profile_image')->default("default.png");
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
