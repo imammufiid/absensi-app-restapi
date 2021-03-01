@@ -20,7 +20,7 @@ class UserController extends Controller
     {
         // Get by user
         try {
-            $userId = request('user_id');
+            $userId = request('id');
 
             if ($userId == null) {
                 return response()->json([
@@ -32,8 +32,6 @@ class UserController extends Controller
                     'data' => null
                 ], Response::HTTP_BAD_REQUEST);
             } else {
-
-
                 $user = User::where("id", $userId)->first();
                 if (empty($user)) {
                     return response()->json([
@@ -68,28 +66,6 @@ class UserController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -110,22 +86,29 @@ class UserController extends Controller
                 'data' => null
             ], Response::HTTP_BAD_REQUEST);
         } else {
-            $pathImg = $_SERVER['DOCUMENT_ROOT'] . "/img/image_user";
+            $pathImg = $_SERVER['DOCUMENT_ROOT'] . "/img/image_user/";
 
             $currentData = User::where("id", $userId)->first();
+            $userName = (request("name") == null)
+                ? $currentData->name
+                : request("name");
+            $password = (request("password") == null)
+                ? $currentData->password
+                : bcrypt(request("password"));
+
             if ($userImg != null) {
-                unlink($pathImg . $currentData->image);
+                unlink($pathImg . $currentData->profile_image);
                 $userImgName = time() . "_" . $userImg->getClientOriginalName();
                 $destSave = 'img/image_user';
                 $userImg->move($destSave, $userImgName);
             } else {
-                $userImgName = $currentData->image;
+                $userImgName = $currentData->profile_image;
             }
 
             $data = [
-                'name'      => request("name"),
-                'password'  => request("password"),
-                "image"     => $userImgName
+                'name'      => $userName,
+                'password'  => $password,
+                "profile_image"     => $userImgName
             ];
 
             $dataUpdate = User::where("id", $userId)
@@ -151,16 +134,5 @@ class UserController extends Controller
                 ], Response::HTTP_UNPROCESSABLE_ENTITY);
             }
         }
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 }
