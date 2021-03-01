@@ -18,7 +18,7 @@ class CreateTasksTable extends Migration
             $table->unsignedBigInteger("user_id");
             $table->text("task");
             $table->tinyInteger("is_complete");
-            $table->timestamp("datetime");
+            $table->string("datetime");
             $table->timestamps();
 
             $table->foreign("user_id")->references("id")->on("users");

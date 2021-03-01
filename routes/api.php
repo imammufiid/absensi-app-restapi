@@ -23,6 +23,16 @@ Route::group([
 });
 
 Route::group([
+    "namespace" => 'Task',
+    "prefix"    => 'task'
+], function() {
+    Route::get('/', 'TaskController@index');
+    Route::get('/show', 'TaskController@show');
+    Route::put('/mark', 'TaskController@markComplete');
+    Route::post('/store', 'TaskController@store');
+});
+
+Route::group([
     "namespace" => 'Attendance',
     "prefix"    => 'attendance'
 ], function () {
