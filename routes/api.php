@@ -46,6 +46,6 @@ Route::group([
     "namespace" => 'User',
     "prefix"    => 'user'
 ], function() {
-    Route::get('/', 'UserController');
-    Route::get('/update', 'UserController@update');
+    Route::get('/', 'UserController@index');
+    Route::post('/save', 'UserController@update');
 });
