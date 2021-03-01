@@ -13,7 +13,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::namespace('Auth')->prefix('auth')->group(function () {
+Route::group([
+    "namespace" => 'Auth',
+    "prefix"    => "auth"
+], function () {
     Route::post('register', 'RegistrationController');
     Route::post('login', 'LoginController');
     Route::post('logout', 'LogoutController');
@@ -27,4 +30,14 @@ Route::group([
     Route::get('/show', 'TaskController@show');
     Route::put('/mark', 'TaskController@markComplete');
     Route::post('/store', 'TaskController@store');
+});
+
+Route::group([
+    "namespace" => 'Attendance',
+    "prefix"    => 'attendance'
+], function () {
+    Route::get("/", 'AttendanceController@index');
+    Route::post("/come", 'AttendanceController@comes');
+    Route::put("/gohome", 'AttendanceController@gohome');
+    Route::get("/show", 'AttendanceController@show');
 });
