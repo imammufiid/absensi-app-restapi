@@ -101,8 +101,11 @@ class UserController extends Controller
                 : bcrypt(request("password"));
 
             if ($userImg != null) {
-                unlink($pathImg . $currentData->profile_image);
                 $userImgName = time() . "_" . $userImg->getClientOriginalName();
+                if ($currentData->profile_image != "default.png") {
+                    unlink($pathImg . $currentData->profile_image);
+                }
+                                
                 $destSave = 'img/image_user';
                 $userImg->move($destSave, $userImgName);
             } else {
