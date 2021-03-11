@@ -33,7 +33,8 @@ class TaskController extends Controller
         if ($isAdmin != null) {
             // admin
             $task = Task::where('datetime', 'LIKE', '%' . $filterDate . '%')
-                ->get();
+		    ->where('user_id', $userId)
+		    ->get();
         } else {
             // employe
             $task = Task::where('datetime', 'LIKE', '%' . $filterDate . '%')
