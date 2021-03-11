@@ -49,3 +49,10 @@ Route::group([
     Route::get('/', 'UserController@index');
     Route::post('/save', 'UserController@update');
 });
+
+Route::group([
+    "namespace" => 'Employee',
+    "prefix"    => 'employee'
+], function() {
+    Route::get('/', 'EmployeeController@index');
+});
