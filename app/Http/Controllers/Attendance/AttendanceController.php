@@ -145,7 +145,7 @@ class AttendanceController extends Controller
 
 
             $idEmploye = request("id_employe");
-            $today = date("d-M-Y");
+            $today = date("d-m-Y");
 
             $attendanceToday = Attendence::where('user_id', $idEmploye)
                 ->where('date', $today)->first();
