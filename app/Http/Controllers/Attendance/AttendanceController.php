@@ -129,7 +129,7 @@ class AttendanceController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'id_employe' => "required",
+                'id_employee' => "required",
             ]);
 
             if ($validator->fails()) {
@@ -144,7 +144,7 @@ class AttendanceController extends Controller
             }
 
 
-            $idEmploye = request("id_employe");
+            $idEmploye = request("id_employee");
             $today = date("d-m-Y");
 
             $attendanceToday = Attendence::where('user_id', $idEmploye)
@@ -155,10 +155,10 @@ class AttendanceController extends Controller
                     'meta' => object_meta(
                         Response::HTTP_NOT_FOUND,
                         "failed",
-                        "Data Not Found"
+                        "Belum Absen hari ini"
                     ),
                     'data' => null
-                ], Response::HTTP_NOT_FOUND);
+                ], Response::HTTP_OK);
             } else {
                 return response()->json([
                     'meta' => object_meta(
