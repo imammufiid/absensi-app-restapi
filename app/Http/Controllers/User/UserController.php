@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -37,6 +38,18 @@ class UserController extends Controller
                 ], Response::HTTP_BAD_REQUEST);
             } else {
                 $user = User::where("id", $userId)->first();
+
+                $baseUrl = URL::to("/img") . "/";
+                $result = [
+                    'id' => $user->id,
+                    'nik' => $user->nik,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'password' => $user->password,
+                    'profile_image' => $baseUrl . "image_user/" . $user->profile_image,
+                ];
+
+
                 if (empty($user)) {
                     return response()->json([
                         'meta' => object_meta(
@@ -53,7 +66,7 @@ class UserController extends Controller
                             "success",
                             "This data user"
                         ),
-                        'data' => $user
+                        'data' => $result
                     ], Response::HTTP_OK);
                 }
             }
@@ -105,7 +118,7 @@ class UserController extends Controller
                 if ($currentData->profile_image != "default.png") {
                     unlink($pathImg . $currentData->profile_image);
                 }
-                                
+
                 $destSave = 'img/image_user';
                 $userImg->move($destSave, $userImgName);
             } else {
