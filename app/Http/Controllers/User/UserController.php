@@ -134,6 +134,18 @@ class UserController extends Controller
             $dataUpdate = User::where("id", $userId)
                 ->update($data);
 
+            $user = User::where("id", $userId)->first();
+            $baseUrl = URL::to("/img") . "/";
+                $result = [
+                    'id' => $user->id,
+                    'nik' => $user->nik,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'password' => $user->password,
+                    'qrcode'    => $baseUrl . "qrcode_user/" . $user->qrcode . '.png',
+                    'profile_image' => $baseUrl . "image_user/" . $user->profile_image,
+                ];
+
             if ($dataUpdate > 0) {
                 return response()->json([
                     'meta' => object_meta(
@@ -141,7 +153,7 @@ class UserController extends Controller
                         "success",
                         "Success Update Data"
                     ),
-                    'data' => $dataUpdate
+                    'data' => $result
                 ], Response::HTTP_OK);
             } else {
                 return response()->json([
