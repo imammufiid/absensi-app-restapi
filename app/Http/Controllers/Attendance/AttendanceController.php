@@ -62,62 +62,6 @@ class AttendanceController extends Controller
     }
 
     /**
-     * Employe has been comes.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function comes(Request $request)
-    {
-        try {
-            $validator = Validator::make($request->all(), [
-                "id_employee" => "required"
-            ]);
-
-            if ($validator->fails()) {
-                return response()->json([
-                    'meta' => object_meta(
-                        Response::HTTP_BAD_REQUEST,
-                        "failed",
-                        "Failed"
-                    ),
-                    'data' => $validator->errors()
-                ], Response::HTTP_BAD_REQUEST);
-            }
-
-            $idEmploye = request("id_employee");
-            $time = time();
-            $attendance = Attendence::create([
-                "user_id"       => $idEmploye,
-                "date"          => date("d-m-Y", $time),
-                "time_comes"    => date("H:i:s", $time),
-                "time_gohome"   => 0
-            ]);
-
-            return response()->json([
-                "meta" => object_meta(
-                    Response::HTTP_CREATED,
-                    "success",
-                    "Success for Attendance"
-                ),
-                "data" => $attendance
-            ], Response::HTTP_CREATED);
-        } catch (Throwable $e) {
-            $data = [
-                "error" => $e
-            ];
-            return response()->json([
-                "meta" => object_meta(
-                    Response::HTTP_BAD_REQUEST,
-                    "error",
-                    "Failed for Attendance"
-                ),
-                "data" => $data
-            ], Response::HTTP_BAD_REQUEST);
-        }
-    }
-
-    /**
      * Display the specified data attendance.
      *
      * @param  \App\Attendence  $attendence
@@ -189,7 +133,7 @@ class AttendanceController extends Controller
      * @param  \App\Attendence  $attendence
      * @return \Illuminate\Http\Response
      */
-    public function gohome(Request $request)
+    public function scan(Request $request)
     {
         try {
             // validation
@@ -216,19 +160,40 @@ class AttendanceController extends Controller
             // get date this day
             $currentDate = date('d-m-Y');
             $checkerAttendance = Attendence::where('date', $currentDate)
-                ->where('time_gohome', 0)
                 ->first();
 
             if ($checkerAttendance == null) {
+                // is comming
+                $time = time();
+                $attendance = Attendence::create([
+                    "user_id"       => $idEmploye,
+                    "date"          => date("d-m-Y", $time),
+                    "time_comes"    => date("H:i:s", $time),
+                    "time_gohome"   => 0
+                ]);
+
                 return response()->json([
                     "meta" => object_meta(
-                        Response::HTTP_NOT_FOUND,
-                        "failed",
-                        "Failed for Attendance, data not found"
+                        Response::HTTP_CREATED,
+                        "success",
+                        "Success for Attendance Comming"
                     ),
-                    "data" => null
-                ], Response::HTTP_NOT_FOUND);
+                    "data" => $attendance
+                ], Response::HTTP_CREATED);
             } else {
+                // is go home
+
+                if ($checkerAttendance->time_gohome != 0) {
+                    return response()->json([
+                        "meta" => object_meta(
+                            Response::HTTP_BAD_REQUEST,
+                            "failed",
+                            "Anda Sudah Absen Pulang"
+                        ),
+                        "data" => null
+                    ], Response::HTTP_BAD_REQUEST);
+                }
+
                 // data for updating
                 $data = [
                     "time_gohome" => date("H:i:s", $time),

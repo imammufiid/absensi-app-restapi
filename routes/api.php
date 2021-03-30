@@ -37,8 +37,7 @@ Route::group([
     "prefix"    => 'attendance'
 ], function () {
     Route::get("/", 'AttendanceController@index');
-    Route::post("/come", 'AttendanceController@comes');
-    Route::put("/gohome", 'AttendanceController@gohome');
+    Route::post("/scan", 'AttendanceController@scan');
     Route::get("/show", 'AttendanceController@show');
 });
 
