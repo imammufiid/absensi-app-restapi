@@ -222,6 +222,7 @@ class TaskController extends Controller
                     'is_complete' => 1
                 ];
                 $task = Task::where("id", $idTask)->update($data);
+                $taskResult = Task::where("id", $idTask)->first();
                 if($task > 0) {
                     return response()->json([
                         'meta' => object_meta(
@@ -229,7 +230,7 @@ class TaskController extends Controller
                             "success",
                             "Task has completed"
                         ),
-                        'data' => $task
+                        'data' => $taskResult
                     ], Response::HTTP_OK);
                 } else {
                     return response()->json([
@@ -238,7 +239,7 @@ class TaskController extends Controller
                             "failed",
                             "Data Task Not Found"
                         ),
-                        'data' => $task
+                        'data' => $taskResult
                     ], Response::HTTP_NOT_FOUND);
                 }
 
