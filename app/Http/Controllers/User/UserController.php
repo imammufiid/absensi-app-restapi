@@ -46,6 +46,7 @@ class UserController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'password' => $user->password,
+                    'qrcode'    => $baseUrl . "qrcode_user/" . $user->qrcode . '.png',
                     'profile_image' => $baseUrl . "image_user/" . $user->profile_image,
                 ];
 
