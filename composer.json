@@ -9,9 +9,11 @@
     "license": "MIT",
     "require": {
         "php": "^7.2.5|^8.0",
+        "endroid/qr-code": "^3.9",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^6.3.1|^7.0.1",
+        "intervention/image": "^2.5",
         "laravel/framework": "^7.29",
         "laravel/tinker": "^2.5",
         "lcobucci/jwt": "3.3.3",
