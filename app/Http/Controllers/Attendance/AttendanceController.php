@@ -40,7 +40,7 @@ class AttendanceController extends Controller
 
         $dataAttendance = Attendence::where("user_id", request("user_id"))->get();
 
-        if($dataAttendance != null) {
+        if ($dataAttendance != null) {
             return response()->json([
                 "meta" => object_meta(
                     Response::HTTP_OK,
@@ -59,8 +59,6 @@ class AttendanceController extends Controller
                 "data" => null
             ], Response::HTTP_NOT_FOUND);
         }
-
-        
     }
 
     /**
@@ -73,7 +71,7 @@ class AttendanceController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                "id_employe" => "required"
+                "id_employee" => "required"
             ]);
 
             if ($validator->fails()) {
@@ -87,7 +85,7 @@ class AttendanceController extends Controller
                 ], Response::HTTP_BAD_REQUEST);
             }
 
-            $idEmploye = request("id_employe");
+            $idEmploye = request("id_employee");
             $time = time();
             $attendance = Attendence::create([
                 "user_id"       => $idEmploye,
@@ -196,8 +194,7 @@ class AttendanceController extends Controller
         try {
             // validation
             $validator = Validator::make($request->all(), [
-                "id"         => "required",
-                "id_employe" => "required"
+                "id_employee" => "required"
             ]);
 
             // check validation
@@ -213,38 +210,53 @@ class AttendanceController extends Controller
             }
 
             // data request
-            $idEmploye = request("id_employe");
+            $idEmploye = request("id_employee");
             $time = time();
 
-            // data for updating
-            $data = [
-                "time_gohome" => date("H:i:s", $time),
-            ];
+            // get date this day
+            $currentDate = date('d-m-Y');
+            $checkerAttendance = Attendence::where('date', $currentDate)
+                ->where('time_gohome', 0)
+                ->first();
 
-            $attendance = Attendence::where('id', request("id"))
-                ->where('user_id', $idEmploye)
-                ->update($data);
-
-            if ($attendance > 0) {
+            if ($checkerAttendance == null) {
                 return response()->json([
                     "meta" => object_meta(
-                        Response::HTTP_CREATED,
-                        "success",
-                        "Success for Go Home Attendance"
-                    ),
-                    "data" => $attendance
-                ], Response::HTTP_CREATED);
-            } else {
-                return response()->json([
-                    "meta" => object_meta(
-                        Response::HTTP_BAD_REQUEST,
+                        Response::HTTP_NOT_FOUND,
                         "failed",
-                        "Failed for Go Home Attendance"
+                        "Failed for Attendance, data not found"
                     ),
-                    "data" => $attendance
-                ], Response::HTTP_BAD_REQUEST);
+                    "data" => null
+                ], Response::HTTP_NOT_FOUND);
+            } else {
+                // data for updating
+                $data = [
+                    "time_gohome" => date("H:i:s", $time),
+                ];
+                $attendance = Attendence::where('date', $currentDate)
+                    ->where('user_id', $idEmploye)
+                    ->update($data);
+
+                if ($attendance > 0) {
+                    return response()->json([
+                        "meta" => object_meta(
+                            Response::HTTP_CREATED,
+                            "success",
+                            "Success for Go Home Attendance"
+                        ),
+                        "data" => $attendance
+                    ], Response::HTTP_CREATED);
+                } else {
+                    return response()->json([
+                        "meta" => object_meta(
+                            Response::HTTP_BAD_REQUEST,
+                            "failed",
+                            "Failed for Go Home Attendance"
+                        ),
+                        "data" => $attendance
+                    ], Response::HTTP_BAD_REQUEST);
+                }
             }
-            
         } catch (Throwable $e) {
             $data = [
                 "error" => $e
