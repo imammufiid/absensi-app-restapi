@@ -140,7 +140,9 @@ class AttendanceController extends Controller
             // validation
             $validator = Validator::make($request->all(), [
                 "id_employee"   => "required",
-                "qr_code"       => "required"
+                "qr_code"       => "required",
+                "latitude"      => "required",
+                "longitude"      => "required",
             ]);
 
             // validation error
@@ -170,6 +172,19 @@ class AttendanceController extends Controller
                         Response::HTTP_BAD_REQUEST,
                         "failed",
                         "Qr Code Not Valid"
+                    ),
+                    "data" => null
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // calculate distance location employee and office
+            $distance = $this->calculateDistance(request("latitude"), request("longitude"));
+            if ($distance > 15) {
+                return response()->json([
+                    "meta" => object_meta(
+                        Response::HTTP_BAD_REQUEST,
+                        "failed",
+                        "Jarak anda masih " . number_format($distance, 1, '.', ',') . " M dari kantor"
                     ),
                     "data" => null
                 ], Response::HTTP_BAD_REQUEST);
@@ -265,6 +280,42 @@ class AttendanceController extends Controller
         }
 
         return false;
+    }
 
+    private function calculateDistance($latitude = 0, $longitude = 0, $unit = "M")
+    {
+        $dataConfiguration = data_app_configuration('office location');
+        $officeLocation = json_decode($dataConfiguration->configuration);
+
+        if (($latitude == $officeLocation->latitude) && ($longitude == $officeLocation->longitude)) {
+            return 0;
+        } else {
+            $theta = $longitude - $officeLocation->longitude;
+            $dist = sin(deg2rad($latitude))
+                * sin(deg2rad($officeLocation->latitude))
+                + cos(deg2rad($latitude))
+                * cos(deg2rad($officeLocation->latitude))
+                * cos(deg2rad($theta));
+
+            $dist = acos($dist);
+            $dist = rad2deg($dist);
+            $miles = $dist * 60 * 1.1515;
+            $unit = strtoupper($unit);
+
+            switch ($unit) {
+                case "K":
+                    return $miles * 1.609344;
+                    break;
+                case "N":
+                    return $miles * 0.8684;
+                    break;
+                case "M":
+                    return ($miles * 1.609344) * 1000;
+                    break;
+                default:
+                    return $miles;
+                    break;
+            }
+        }
     }
 }
