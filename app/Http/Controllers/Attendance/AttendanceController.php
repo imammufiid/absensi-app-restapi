@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Attendance;
 
 use App\Attendence;
 use App\Http\Controllers\Controller;
+use App\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
@@ -138,10 +139,11 @@ class AttendanceController extends Controller
         try {
             // validation
             $validator = Validator::make($request->all(), [
-                "id_employee" => "required"
+                "id_employee"   => "required",
+                "qr_code"       => "required"
             ]);
 
-            // check validation
+            // validation error
             if ($validator->fails()) {
                 return response()->json([
                     'meta' => object_meta(
@@ -154,11 +156,26 @@ class AttendanceController extends Controller
             }
 
             // data request
-            $idEmploye = request("id_employee");
+            $idEmploye  = request("id_employee");
+            $qrCode     = request("qr_code");
             $time = time();
 
             // get date this day
             $currentDate = date('d-m-Y');
+
+            // check name of qr code
+            if (!$this->checkValidationQrCode($qrCode, $idEmploye)) {
+                return response()->json([
+                    "meta" => object_meta(
+                        Response::HTTP_BAD_REQUEST,
+                        "failed",
+                        "Qr Code Not Valid"
+                    ),
+                    "data" => null
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // check when come or go home
             $checkerAttendance = Attendence::where('date', $currentDate)
                 ->first();
 
@@ -182,8 +199,8 @@ class AttendanceController extends Controller
                 ], Response::HTTP_CREATED);
             } else {
                 // is go home
-
                 if ($checkerAttendance->time_gohome != 0) {
+                    // already home
                     return response()->json([
                         "meta" => object_meta(
                             Response::HTTP_BAD_REQUEST,
@@ -194,7 +211,7 @@ class AttendanceController extends Controller
                     ], Response::HTTP_BAD_REQUEST);
                 }
 
-                // data for updating
+                // scan for attendance go home
                 $data = [
                     "time_gohome" => date("H:i:s", $time),
                 ];
@@ -235,5 +252,19 @@ class AttendanceController extends Controller
                 "data" => $data
             ], Response::HTTP_BAD_REQUEST);
         }
+    }
+
+    private function checkValidationQrCode($qrCode = "", $idEmploye = 0)
+    {
+        $data = User::where("id", $idEmploye)
+            ->where("qrcode", $qrCode)
+            ->first();
+
+        if ($data != null) {
+            return true;
+        }
+
+        return false;
+
     }
 }
