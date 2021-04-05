@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Task;
 
 use App\Http\Controllers\Controller;
 use App\Task;
+use App\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -15,7 +16,7 @@ class TaskController extends Controller
     {
         $this->middleware('auth:api');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -33,8 +34,8 @@ class TaskController extends Controller
         if ($isAdmin != null) {
             // admin
             $task = Task::where('datetime', 'LIKE', '%' . $filterDate . '%')
-		    ->where('user_id', $userId)
-		    ->get();
+                ->where('user_id', $userId)
+                ->get();
         } else {
             // employe
             $task = Task::where('datetime', 'LIKE', '%' . $filterDate . '%')
@@ -136,7 +137,7 @@ class TaskController extends Controller
     public function show(Request $request)
     {
         try {
-            $idTask = request('id_task') ;
+            $idTask = request('id_task');
             if ($idTask == null) {
                 return response()->json([
                     'meta' => object_meta(
@@ -149,7 +150,7 @@ class TaskController extends Controller
             } else {
 
                 $task = Task::where("id", $idTask)->get();
-                if(empty($task)) {
+                if (empty($task)) {
                     return response()->json([
                         'meta' => object_meta(
                             Response::HTTP_OK,
@@ -168,7 +169,6 @@ class TaskController extends Controller
                         'data' => $task
                     ], Response::HTTP_NOT_FOUND);
                 }
-
             }
         } catch (Exception $e) {
             return response()->json([
@@ -193,7 +193,9 @@ class TaskController extends Controller
     {
         try {
             $validator = Validator::make($request->all(), [
-                'id_task'   => "required"
+                'id_task'   => "required",
+                "user_id"   => "required",
+                "file"      => "required|mimes:doc,docx,pdf,jpg,jpeg,png,xlsx,xls"
             ]);
 
             if ($validator->fails()) {
@@ -207,7 +209,7 @@ class TaskController extends Controller
                 ], Response::HTTP_BAD_REQUEST);
             }
 
-            $idTask = request('id_task') ;
+            $idTask = request('id_task');
             if ($idTask == null) {
                 return response()->json([
                     'meta' => object_meta(
@@ -218,12 +220,30 @@ class TaskController extends Controller
                     'data' => null
                 ], Response::HTTP_BAD_REQUEST);
             } else {
+                $dataUser = User::where("id", request("user_id"))->first();
+                $nameOfFolder = "document_task/" . $dataUser->nik . "/";
+                $dir = "";
+                // check folder if exist
+                if (check_folder_public_if_not_exist($nameOfFolder)) {
+                    $dir = create_folder_public($nameOfFolder);
+                } else {
+                    $dir = public_path($nameOfFolder);
+                }
+
+                // save file into directory
+                $fileName = time() . "_" . request("file")->getClientOriginalName();
+                request("file")->move($dir, $fileName);
+
+                // data 
                 $data = [
-                    'is_complete' => 1
+                    'is_complete'   => 1,
+                    'file'          => $nameOfFolder . $fileName
                 ];
+
+                // action db
                 $task = Task::where("id", $idTask)->update($data);
                 $taskResult = Task::where("id", $idTask)->first();
-                if($task > 0) {
+                if ($task > 0) {
                     return response()->json([
                         'meta' => object_meta(
                             Response::HTTP_OK,
@@ -242,7 +262,6 @@ class TaskController extends Controller
                         'data' => $taskResult
                     ], Response::HTTP_NOT_FOUND);
                 }
-
             }
         } catch (Exception $e) {
             return response()->json([
