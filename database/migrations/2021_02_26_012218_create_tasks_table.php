@@ -18,6 +18,7 @@ class CreateTasksTable extends Migration
             $table->unsignedBigInteger("user_id");
             $table->text("task");
             $table->tinyInteger("is_complete");
+            $table->string("file")->nullable();
             $table->string("datetime");
             $table->timestamps();
 
