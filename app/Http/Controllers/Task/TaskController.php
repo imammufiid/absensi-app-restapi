@@ -243,6 +243,27 @@ class TaskController extends Controller
                 // action db
                 $task = Task::where("id", $idTask)->update($data);
                 $taskResult = Task::where("id", $idTask)->first();
+
+                // get task point
+                $config = data_app_configuration("office");
+                $dataConfig  = json_decode($config->configuration);
+                $taskPoint = $dataConfig->task_point;
+
+                // list of task ----------------------------
+                $task = Task::where('datetime', 'LIKE', '%' . date("d-m-Y") . '%')
+                    ->where('user_id', request("user_id"))
+                    ->get();
+                // -----------------------------------------
+
+                $data = [
+                    "id"            => $taskResult->id,
+                    "user_id"       => $taskResult->user_id,
+                    "task"          => $taskResult->task,
+                    "is_complete"   => $taskResult->is_complete,
+                    "file"          => public_path() . $taskResult->file,
+                    "datetime"      => $taskResult->datetime,
+                    "file_point"    => $taskPoint
+                ];
                 if ($task > 0) {
                     return response()->json([
                         'meta' => object_meta(
@@ -250,7 +271,7 @@ class TaskController extends Controller
                             "success",
                             "Task has completed"
                         ),
-                        'data' => $taskResult
+                        'data' => $data
                     ], Response::HTTP_OK);
                 } else {
                     return response()->json([
