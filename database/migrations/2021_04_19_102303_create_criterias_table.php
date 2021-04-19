@@ -29,8 +29,6 @@ class CreateCriteriasTable extends Migration
      */
     public function down()
     {
-        Schema::create('criterias', function (Blueprint $table) {
-            Schema::dropIfExists('criterias');
-        });
+        Schema::dropIfExists('criterias');
     }
 }

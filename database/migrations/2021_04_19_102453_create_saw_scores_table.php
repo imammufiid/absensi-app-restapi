@@ -32,8 +32,6 @@ class CreateSawScoresTable extends Migration
      */
     public function down()
     {
-        Schema::create('sawscores', function (Blueprint $table) {
-            Schema::dropIfExists('sawscores');
-        });
+        Schema::dropIfExists('sawscores');
     }
 }
