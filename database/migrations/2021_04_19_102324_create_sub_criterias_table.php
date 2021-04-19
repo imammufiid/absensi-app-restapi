@@ -15,7 +15,7 @@ class CreateSubCriteriasTable extends Migration
     {
         Schema::create('sub_criterias', function (Blueprint $table) {
             $table->id();
-            $table->string("name");
+            $table->text("name");
             $table->unsignedBigInteger("criteria_id");
             $table->integer("point")->default(0);
             $table->timestamps();
@@ -31,8 +31,6 @@ class CreateSubCriteriasTable extends Migration
      */
     public function down()
     {
-        Schema::create('sub_criterias', function (Blueprint $table) {
-            Schema::dropIfExists('sub_criterias');
-        });
+        Schema::dropIfExists('sub_criterias');
     }
 }
