@@ -55,3 +55,10 @@ Route::group([
 ], function() {
     Route::get('/', 'EmployeeController@index');
 });
+
+Route::group([
+    "namespace" => 'Score',
+    "prefix"    => 'score'
+], function() {
+    Route::get('/', 'ScoreController@index');
+});
