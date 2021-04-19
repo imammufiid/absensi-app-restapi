@@ -39,7 +39,9 @@ class AttendanceController extends Controller
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        $dataAttendance = Attendence::where("user_id", request("user_id"))->get();
+        $dataAttendance = Attendence::where("user_id", request("user_id"))
+            ->orderBy('date', 'DESC')
+            ->get();
 
         if ($dataAttendance != null) {
             return response()->json([
@@ -179,7 +181,7 @@ class AttendanceController extends Controller
 
             // calculate distance location employee and office
             $distance = $this->calculateDistance(request("latitude"), request("longitude"));
-            if ($distance > 15) {
+            if ($distance > 50) {
                 return response()->json([
                     "meta" => object_meta(
                         Response::HTTP_BAD_REQUEST,
@@ -284,7 +286,7 @@ class AttendanceController extends Controller
 
     private function calculateDistance($latitude = 0, $longitude = 0, $unit = "M")
     {
-        $dataConfiguration = data_app_configuration('office location');
+        $dataConfiguration = data_app_configuration('office');
         $officeLocation = json_decode($dataConfiguration->configuration);
 
         if (($latitude == $officeLocation->latitude) && ($longitude == $officeLocation->longitude)) {
