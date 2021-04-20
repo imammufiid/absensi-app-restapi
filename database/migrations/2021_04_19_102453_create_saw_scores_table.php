@@ -13,15 +13,16 @@ class CreateSawScoresTable extends Migration
      */
     public function up()
     {
-        Schema::create('sawscores', function (Blueprint $table) {
+        Schema::create('saw_scores', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("user_id");
             $table->unsignedBigInteger("criteria_id");
             $table->integer("point")->default(0);
+            $table->date("date");
             $table->timestamps();
 
             $table->foreign("user_id")->references("id")->on("users");
-            $table->foreign("criteria_id")->references("id")->on("criterias");
+            $table->foreign("criteria_id")->references("id")->on("criterias")->onDelete('cascade');;
         });
     }
 
@@ -32,6 +33,6 @@ class CreateSawScoresTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('sawscores');
+        Schema::dropIfExists('saw_scores');
     }
 }
