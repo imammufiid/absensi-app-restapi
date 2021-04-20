@@ -165,7 +165,7 @@ class AttendanceController extends Controller
             // data request
             $idEmploye  = request("id_employee");
             $qrCode     = request("qr_code");
-            $time = time();
+            $time       = time();
 
             // get date this day
             $currentDate = date('d-m-Y');
@@ -197,6 +197,7 @@ class AttendanceController extends Controller
 
             // check when come or go home
             $checkerAttendance = Attendence::where('date', $currentDate)
+                ->where('user_id', $idEmploye)
                 ->first();
 
             if ($checkerAttendance == null) {
@@ -212,8 +213,7 @@ class AttendanceController extends Controller
                 /**
                  * store point kedisiplinan to saw score table
                  */
-                $point = MyCons::SangatTinggi; // on-time
-                
+                $point = MyCons::SangatTinggi; // on-time  
                 if ($this->checkLateTime(date("H:i:s", $time))) {
                     $point = MyCons::Rendah; // late
                 }
@@ -221,6 +221,7 @@ class AttendanceController extends Controller
                     "user_id"       => $idEmploye,
                     "criteria_id"   => 1,
                     "point"         => $point,
+                    "date"          => date('Y-m-d')
                 ]);
 
                 return response()->json([
@@ -351,5 +352,20 @@ class AttendanceController extends Controller
         }
 
         return false;
+    }
+
+    private function checkYesterday($userId = 0)
+    {
+        $yesterday = date('d-m-Y', strtotime("-1 days"));
+        $isComming = true;
+        $result = Attendence::where("user_id", $userId)
+            ->where("date", $yesterday)
+            ->first();
+
+        if ($result == null) {
+            $isComming = false;
+        }
+
+        return $isComming;
     }
 }
