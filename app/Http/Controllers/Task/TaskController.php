@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Task;
 
 use App\Http\Controllers\Controller;
+use App\MyCons;
+use App\SawScore;
 use App\Task;
 use App\User;
 use Exception;
@@ -97,6 +99,22 @@ class TaskController extends Controller
                     'is_complete'   => 0,
                     'datetime'      => date('d-m-Y H:i:s')
                 ]);
+
+                /**
+                 * insert default point saw for task
+                 */
+                // 1. cek apakah hari itu di saw score sudah ada?
+                // 2. jika belum -> insert, jika sudah berarti update
+                $sawScoreTask = $this->checkSawScoreTask(request('user_id'));
+                if (!$sawScoreTask['is_there']) {
+                    // no there
+                    SawScore::create([
+                        'user_id'   => request('user_id'),
+                        'criteria_id'    => MyCons::TanggungJawab,
+                        'point'         => MyCons::SangatRendah,
+                        'date'          => date('Y-m-d')
+                    ]);
+                }
 
                 return response()->json([
                     'meta' => object_meta(
@@ -198,6 +216,7 @@ class TaskController extends Controller
                 "file"      => "required|mimes:doc,docx,pdf,jpg,jpeg,png,xlsx,xls"
             ]);
 
+            // request validation
             if ($validator->fails()) {
                 return response()->json([
                     'meta' => object_meta(
@@ -244,15 +263,24 @@ class TaskController extends Controller
                 $task = Task::where("id", $idTask)->update($data);
                 $taskResult = Task::where("id", $idTask)->first();
 
+                // set Score Task SAW algorithm
+                $point = $this->checkTaskComplete(request('user_id'));
+                
+                SawScore::where('user_id', request('user_id'))
+                    ->where('date', date('Y-m-d'))
+                    ->update([
+                        'point' => (int) $point,
+                    ]);
+
                 // get task point
-                $config = data_app_configuration("office");
-                $dataConfig  = json_decode($config->configuration);
-                $taskPoint = $dataConfig->task_point;
+                // $config = data_app_configuration("office");
+                // $dataConfig  = json_decode($config->configuration);
+                // $taskPoint = $dataConfig->task_point;
 
                 // list of task ----------------------------
-                $task = Task::where('datetime', 'LIKE', '%' . date("d-m-Y") . '%')
-                    ->where('user_id', request("user_id"))
-                    ->get();
+                // $listTask = Task::where('datetime', 'LIKE', '%' . date("d-m-Y") . '%')
+                //     ->where('user_id', request("user_id"))
+                //     ->get();
                 // -----------------------------------------
 
                 $data = [
@@ -262,7 +290,6 @@ class TaskController extends Controller
                     "is_complete"   => $taskResult->is_complete,
                     "file"          => public_path() . $taskResult->file,
                     "datetime"      => $taskResult->datetime,
-                    "file_point"    => $taskPoint
                 ];
                 if ($task > 0) {
                     return response()->json([
@@ -294,5 +321,49 @@ class TaskController extends Controller
                 'data' => null
             ], Response::HTTP_SERVICE_UNAVAILABLE);
         }
+    }
+
+    private function checkSawScoreTask($userId = 0)
+    {
+        $isThere = SawScore::where('user_id', $userId)
+            ->where('criteria_id', MyCons::TanggungJawab)
+            ->where('date', date('Y-m-d'))
+            ->first();
+
+        $result = [];
+
+        if ($isThere == null) {
+            $result = [
+                'is_there'  => false,
+                'data_id'   => null
+            ];
+        } else {
+            $result = [
+                'is_there'  => true,
+                'data_id'   => $isThere->id
+            ];
+        }
+
+        return $result;
+    }
+
+    private function checkTaskComplete($userId = 0)
+    {
+        $filterDate = date('d-m-Y');
+        $allTask = Task::where('datetime', 'LIKE', '%' . $filterDate . '%')
+            ->where('user_id', $userId)
+            ->get();
+
+        $taskIsComplete = Task::where('datetime', 'LIKE', '%' . $filterDate . '%')
+            ->where('user_id', $userId)
+            ->where("is_complete", 1)
+            ->get();
+
+        $countTask = MyCons::Cukup;
+        if ($taskIsComplete->count() == $allTask->count()) {
+            $countTask = MyCons::SangatTinggi;
+        }
+        
+        return $countTask;
     }
 }
