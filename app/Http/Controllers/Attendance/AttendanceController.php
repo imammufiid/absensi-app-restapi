@@ -4,7 +4,10 @@ namespace App\Http\Controllers\Attendance;
 
 use App\Attendence;
 use App\Http\Controllers\Controller;
+use App\MyCons;
+use App\SawScore;
 use App\User;
+use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
@@ -206,6 +209,20 @@ class AttendanceController extends Controller
                     "time_gohome"   => 0
                 ]);
 
+                /**
+                 * store point kedisiplinan to saw score table
+                 */
+                $point = MyCons::SangatTinggi; // on-time
+                
+                if ($this->checkLateTime(date("H:i:s", $time))) {
+                    $point = MyCons::Rendah; // late
+                }
+                SawScore::create([
+                    "user_id"       => $idEmploye,
+                    "criteria_id"   => 1,
+                    "point"         => $point,
+                ]);
+
                 return response()->json([
                     "meta" => object_meta(
                         Response::HTTP_CREATED,
@@ -319,5 +336,20 @@ class AttendanceController extends Controller
                     break;
             }
         }
+    }
+
+    private function checkLateTime($timeFrom = "")
+    {
+        $dataConfiguration = data_app_configuration('office');
+        $config = json_decode($dataConfiguration->configuration);
+
+        $timeTo = DateTime::createFromFormat('H:i:s', $config->time);
+        $from = DateTime::createFromFormat('H:i:s', $timeFrom);
+
+        if ($from > $timeTo) { // late
+            return true;
+        }
+
+        return false;
     }
 }
