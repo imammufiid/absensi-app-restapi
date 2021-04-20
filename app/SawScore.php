@@ -12,6 +12,10 @@ class SawScore extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'citeria_id', 'point'
+        'user_id', 'criteria_id', 'point', 'date'
+    ];
+
+    protected $casts = [
+        'date' => 'datetime:d-m-Y', // Change your format
     ];
 }
