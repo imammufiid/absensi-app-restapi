@@ -20,7 +20,7 @@ class CreateSubCriteriasTable extends Migration
             $table->integer("point")->default(0);
             $table->timestamps();
 
-            $table->foreign("criteria_id")->references("id")->on("criterias");
+            $table->foreign("criteria_id")->references("id")->on("criterias")->onDelete('cascade');;
         });
     }
 
