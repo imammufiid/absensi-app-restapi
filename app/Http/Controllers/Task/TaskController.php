@@ -9,6 +9,7 @@ use App\Task;
 use App\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -43,6 +44,10 @@ class TaskController extends Controller
             $task = Task::where('datetime', 'LIKE', '%' . $filterDate . '%')
                 ->where('user_id', $userId)
                 ->get();
+        }
+
+        foreach ($task as $key => $value) {
+            $task[$key]['file'] = URL::to($value->file);
         }
 
         if ($task == null) {
@@ -265,7 +270,7 @@ class TaskController extends Controller
 
                 // set Score Task SAW algorithm
                 $point = $this->checkTaskComplete(request('user_id'));
-                
+
                 SawScore::where('user_id', request('user_id'))
                     ->where('date', date('Y-m-d'))
                     ->update([
@@ -363,7 +368,7 @@ class TaskController extends Controller
         if ($taskIsComplete->count() == $allTask->count()) {
             $countTask = MyCons::SangatTinggi;
         }
-        
+
         return $countTask;
     }
 }
