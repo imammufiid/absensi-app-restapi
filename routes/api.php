@@ -23,16 +23,6 @@ Route::group([
 });
 
 Route::group([
-    "namespace" => 'Task',
-    "prefix"    => 'task'
-], function() {
-    Route::get('/', 'TaskController@index');
-    Route::get('/show', 'TaskController@show');
-    Route::post('/mark', 'TaskController@markComplete');
-    Route::post('/store', 'TaskController@store');
-});
-
-Route::group([
     "namespace" => 'Attendance',
     "prefix"    => 'attendance'
 ], function () {
@@ -54,11 +44,4 @@ Route::group([
     "prefix"    => 'employee'
 ], function() {
     Route::get('/', 'EmployeeController@index');
-});
-
-Route::group([
-    "namespace" => 'Score',
-    "prefix"    => 'score'
-], function() {
-    Route::get('/', 'ScoreController@index');
 });
