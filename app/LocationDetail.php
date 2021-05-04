@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class AttendanceDetail extends Model
+class LocationDetail extends Model
 {
     /**
      * The attributes that are mass assignable.
