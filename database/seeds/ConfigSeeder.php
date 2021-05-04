@@ -17,8 +17,8 @@ class ConfigSeeder extends Seeder
         $dataOfficeLocation = [
             "name"              => "Office",
             "address"           => "Blitar City",
-            "latitude"          => "0.0000000",
-            "longitude"         => "000.0000000",
+            "latitude"          => "-8.137035168730755",
+            "longitude"         => "112.13864366932964",
             "time"              => "07:30:00",
             "attendance_point"  => 2,
             "task_point"        => 2
