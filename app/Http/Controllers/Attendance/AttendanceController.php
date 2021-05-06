@@ -398,6 +398,77 @@ class AttendanceController extends Controller
         }
     }
 
+    public function validateAttendance(Request $request)
+    {
+        try {
+            // validation
+            $validator = Validator::make($request->all(), [
+                "attendance_id"     => "required",
+                "is_admin"          => "required"
+            ]);
+
+            // validation error
+            if ($validator->fails()) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_BAD_REQUEST,
+                        "failed",
+                        "Failed"
+                    ),
+                    'data' => $validator->errors()
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+            // * get attendance by id
+            $attendance = Attendence::where("id", request("attendance_id"))->first();
+
+            if ($attendance == null) {
+                return response()->json([
+                    "meta" => object_meta(
+                        Response::HTTP_NOT_FOUND,
+                        "failed",
+                        "Attendance Not Found"
+                    ),
+                    "data" => null
+                ], Response::HTTP_NOT_FOUND);
+            }
+
+            $data["is_validate"] = 1;
+            $attendanceUpdate = Attendence::where("id", request("attendance_id"))->update($data);
+
+            if ($attendanceUpdate <= 0) {
+                return response()->json([
+                    "meta" => object_meta(
+                        Response::HTTP_OK,
+                        "failed",
+                        "Attendance failed validation"
+                    ),
+                    "data" => $attendanceUpdate
+                ], Response::HTTP_OK);
+            }
+            return response()->json([
+                "meta" => object_meta(
+                    Response::HTTP_OK,
+                    "success",
+                    "Attendance has been validation"
+                ),
+                "data" => $attendanceUpdate
+            ], Response::HTTP_OK);
+        } catch (Throwable $e) {
+            $data = [
+                "error" => $e->getMessage()
+            ];
+            return response()->json([
+                "meta" => object_meta(
+                    Response::HTTP_CONFLICT,
+                    "error",
+                    "Failed for Validation Attendance"
+                ),
+                "data" => $data
+            ], Response::HTTP_CONFLICT);
+        }
+    }
+
     private function checkValidationQrCode($qrCode = "", $idEmploye = 0)
     {
         $data = User::where("id", $idEmploye)

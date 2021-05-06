@@ -28,6 +28,7 @@ Route::group([
 ], function () {
     Route::get("/", 'AttendanceController@index');
     Route::post("/scan", 'AttendanceController@scan');
+    Route::post("/validate", 'AttendanceController@validateAttendance');
     Route::get("/show", 'AttendanceController@show');
 });
 
