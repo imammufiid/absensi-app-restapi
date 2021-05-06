@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\Attendance;
 
+use App\AttendanceDetail;
 use App\Attendence;
 use App\Http\Controllers\Controller;
+use App\LocationDetail;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Facades\Validator;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -142,9 +145,9 @@ class AttendanceController extends Controller
             // validation
             $validator = Validator::make($request->all(), [
                 "id_employee"   => "required",
-                "qr_code"       => "required",
                 "latitude"      => "required",
                 "longitude"      => "required",
+                "attendance_type"   => "required"
             ]);
 
             // validation error
@@ -161,113 +164,237 @@ class AttendanceController extends Controller
 
             // data request
             $idEmploye  = request("id_employee");
-            $qrCode     = request("qr_code");
+            $attendanceType = request("attendance_type");
             $time = time();
 
             // get date this day
             $currentDate = date('d-m-Y');
 
-            // check name of qr code
-            if (!$this->checkValidationQrCode($qrCode, $idEmploye)) {
-                return response()->json([
-                    "meta" => object_meta(
-                        Response::HTTP_BAD_REQUEST,
-                        "failed",
-                        "Qr Code Not Valid"
-                    ),
-                    "data" => null
-                ], Response::HTTP_BAD_REQUEST);
-            }
-
-            // calculate distance location employee and office
-            $distance = $this->calculateDistance(request("latitude"), request("longitude"));
-            if ($distance > 50) {
-                return response()->json([
-                    "meta" => object_meta(
-                        Response::HTTP_BAD_REQUEST,
-                        "failed",
-                        "Jarak anda masih " . number_format($distance, 1, '.', ',') . " M dari kantor"
-                    ),
-                    "data" => null
-                ], Response::HTTP_BAD_REQUEST);
-            }
-
             // check when come or go home
-            $checkerAttendance = Attendence::where('date', $currentDate)
-                ->first();
+            $checkerAttendance = Attendence::where('date', $currentDate)->first();
 
-            if ($checkerAttendance == null) {
-                // is comming
-                $time = time();
-                $attendance = Attendence::create([
-                    "user_id"       => $idEmploye,
-                    "date"          => date("d-m-Y", $time),
-                    "time_comes"    => date("H:i:s", $time),
-                    "time_gohome"   => 0
-                ]);
+            // check attendance type
+            switch ($attendanceType) {
+                case '1':
+                    # hadir...
+                    $qrCode     = request("qr_code");
 
-                return response()->json([
-                    "meta" => object_meta(
-                        Response::HTTP_CREATED,
-                        "success",
-                        "Success for Attendance Comming"
-                    ),
-                    "data" => $attendance
-                ], Response::HTTP_CREATED);
-            } else {
-                // is go home
-                if ($checkerAttendance->time_gohome != 0) {
-                    // already home
-                    return response()->json([
-                        "meta" => object_meta(
-                            Response::HTTP_BAD_REQUEST,
-                            "failed",
-                            "Anda Sudah Absen Pulang"
-                        ),
-                        "data" => null
-                    ], Response::HTTP_BAD_REQUEST);
-                }
+                    // check name of qr code
+                    if (!$this->checkValidationQrCode($qrCode, $idEmploye)) {
+                        return response()->json([
+                            "meta" => object_meta(
+                                Response::HTTP_BAD_REQUEST,
+                                "failed",
+                                "Qr Code Not Valid"
+                            ),
+                            "data" => null
+                        ], Response::HTTP_BAD_REQUEST);
+                    }
 
-                // scan for attendance go home
-                $data = [
-                    "time_gohome" => date("H:i:s", $time),
-                ];
-                $attendance = Attendence::where('date', $currentDate)
-                    ->where('user_id', $idEmploye)
-                    ->update($data);
+                    // calculate distance location employee and office
+                    $calculateDistance = $this->calculateDistance(request("latitude"), request("longitude"));
+                    $distance = (float) ($calculateDistance * 1.609344) * 1000;
+                    if ($distance > 50) {
+                        return response()->json([
+                            "meta" => object_meta(
+                                Response::HTTP_BAD_REQUEST,
+                                "failed",
+                                "Jarak anda masih " . number_format($distance, 1, '.', ',') . " M dari kantor"
+                            ),
+                            "data" => null
+                        ], Response::HTTP_BAD_REQUEST);
+                    }
 
-                if ($attendance > 0) {
+                    // check when come or go home
+                    $checkerAttendance = Attendence::where('date', $currentDate)
+                        ->first();
+
+                    if ($checkerAttendance == null) {
+                        // is comming
+                        $time = time();
+                        $attendance = Attendence::create([
+                            "user_id"       => $idEmploye,
+                            "date"          => date("d-m-Y", $time),
+                            "time_comes"    => date("H:i:s", $time),
+                            "time_gohome"   => 0,
+                            "attendance_type"   => $attendanceType,
+                            "information"   => "Hadir"
+                        ]);
+
+                        $attendanceLocation = LocationDetail::create([
+                            'attendance_id' => $attendance->id,
+                            'latitude'  => request('latitude'),
+                            'longitude'  => request('longitude'),
+                            'lbs'  => $calculateDistance,
+                        ]);
+
+                        return response()->json([
+                            "meta" => object_meta(
+                                Response::HTTP_CREATED,
+                                "success",
+                                "Success for Attendance Comming"
+                            ),
+                            "data" => [
+                                "attendance"    => $attendance,
+                                "location_attendance"   => $attendanceLocation
+                            ]
+                        ], Response::HTTP_CREATED);
+                    } else {
+                        // is go home
+                        if ($checkerAttendance->time_gohome != 0) {
+                            // already home
+                            return response()->json([
+                                "meta" => object_meta(
+                                    Response::HTTP_BAD_REQUEST,
+                                    "failed",
+                                    "Anda Sudah Absen Pulang"
+                                ),
+                                "data" => null
+                            ], Response::HTTP_BAD_REQUEST);
+                        }
+
+                        // scan for attendance go home
+                        $data = [
+                            "time_gohome" => date("H:i:s", $time),
+                            "information"   => "Pulang"
+                        ];
+                        $attendance = Attendence::where('date', $currentDate)
+                            ->where('user_id', $idEmploye)
+                            ->update($data);
+
+                        if ($attendance > 0) {
+                            return response()->json([
+                                "meta" => object_meta(
+                                    Response::HTTP_CREATED,
+                                    "success",
+                                    "Success for Go Home Attendance"
+                                ),
+                                "data" => $attendance
+                            ], Response::HTTP_CREATED);
+                        } else {
+                            return response()->json([
+                                "meta" => object_meta(
+                                    Response::HTTP_BAD_REQUEST,
+                                    "failed",
+                                    "Failed for Go Home Attendance"
+                                ),
+                                "data" => $attendance
+                            ], Response::HTTP_BAD_REQUEST);
+                        }
+                    }
+
+                    break;
+
+                case '2':
+                    # ijin...
+                    if ($checkerAttendance != null) {
+                        return response()->json([
+                            "meta" => object_meta(
+                                Response::HTTP_OK,
+                                "failed",
+                                "Anda Sudah Absen"
+                            ),
+                            "data" => null
+                        ], Response::HTTP_OK);
+                    }
+                    $information = request("information");
+                    $attendance = Attendence::create([
+                        "user_id"       => $idEmploye,
+                        "date"          => date("d-m-Y", $time),
+                        "time_comes"    => date("H:i:s", $time),
+                        "time_gohome"   => 0,
+                        "attendance_type"   => $attendanceType,
+                        "information"   => $information
+                    ]);
+
                     return response()->json([
                         "meta" => object_meta(
                             Response::HTTP_CREATED,
                             "success",
-                            "Success for Go Home Attendance"
+                            "Success for Attendance Comming"
                         ),
                         "data" => $attendance
                     ], Response::HTTP_CREATED);
-                } else {
+
+                    break;
+
+                case '3':
+                    # sakit...
+                    $folder = "img/file_attendance/";
+                    if ($checkerAttendance != null) {
+                        return response()->json([
+                            "meta" => object_meta(
+                                Response::HTTP_OK,
+                                "failed",
+                                "Anda Sudah Absen"
+                            ),
+                            "data" => null
+                        ], Response::HTTP_OK);
+                    }
+                    $information = request("information");
+                    $fileInformation = request("file_information");
+                    $dataUser = User::where("id", $idEmploye)->first();
+                    $nameOfFolder = $folder . $dataUser->nik . "/";
+
+                    $dir = "";
+                    // check folder if exist
+                    if (check_folder_public_if_not_exist($nameOfFolder)) {
+                        $dir = create_folder_public($nameOfFolder);
+                    } else {
+                        $dir = public_path($nameOfFolder);
+                    }
+                    // save file into directory
+                    $fileName = time() . "_" . $fileInformation->getClientOriginalName();
+                    $fileInformation->move($dir, $fileName);
+
+                    $attendance = Attendence::create([
+                        "user_id"           => $idEmploye,
+                        "date"              => date("d-m-Y", $time),
+                        "time_comes"        => date("H:i:s", $time),
+                        "time_gohome"       => 0,
+                        "attendance_type"   => $attendanceType,
+                        "information"       => $information,
+                        "file_information"  => $nameOfFolder . $fileName
+                    ]);
+
+                    // replace file directory
+                    $attendance->file_information = URL::to($folder) . $nameOfFolder . $fileName;
+
+                    return response()->json([
+                        "meta" => object_meta(
+                            Response::HTTP_CREATED,
+                            "success",
+                            "Success for Attendance Comming"
+                        ),
+                        "data" => $attendance
+                    ], Response::HTTP_CREATED);
+
+                    break;
+
+                default:
+                    # code...
                     return response()->json([
                         "meta" => object_meta(
                             Response::HTTP_BAD_REQUEST,
                             "failed",
-                            "Failed for Go Home Attendance"
+                            "Request Not Valid"
                         ),
-                        "data" => $attendance
+                        "data" => null
                     ], Response::HTTP_BAD_REQUEST);
-                }
+                    break;
             }
         } catch (Throwable $e) {
             $data = [
-                "error" => $e
+                "error" => $e->getMessage()
             ];
             return response()->json([
                 "meta" => object_meta(
-                    Response::HTTP_BAD_REQUEST,
+                    Response::HTTP_CONFLICT,
                     "error",
                     "Failed for Attendance"
                 ),
                 "data" => $data
-            ], Response::HTTP_BAD_REQUEST);
+            ], Response::HTTP_CONFLICT);
         }
     }
 
@@ -304,20 +431,21 @@ class AttendanceController extends Controller
             $miles = $dist * 60 * 1.1515;
             $unit = strtoupper($unit);
 
-            switch ($unit) {
-                case "K":
-                    return $miles * 1.609344;
-                    break;
-                case "N":
-                    return $miles * 0.8684;
-                    break;
-                case "M":
-                    return ($miles * 1.609344) * 1000;
-                    break;
-                default:
-                    return $miles;
-                    break;
-            }
+            return $miles;
+            // switch ($unit) {
+            //     case "K":
+            //         return $miles * 1.609344;
+            //         break;
+            //     case "N":
+            //         return $miles * 0.8684;
+            //         break;
+            //     case "M":
+            //         return ($miles * 1.609344) * 1000;
+            //         break;
+            //     default:
+            //         return $miles;
+            //         break;
+            // }
         }
     }
 }
