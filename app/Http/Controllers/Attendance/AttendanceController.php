@@ -46,6 +46,10 @@ class AttendanceController extends Controller
             ->orderBy('date', 'DESC')
             ->get();
 
+        foreach ($dataAttendance as $key => $value) {
+            $dataAttendance[$key]->file_information = URL::to($value->file_information);
+        }
+
         if ($dataAttendance != null) {
             return response()->json([
                 "meta" => object_meta(
@@ -97,6 +101,8 @@ class AttendanceController extends Controller
 
             $attendanceToday = Attendence::where('user_id', $idEmploye)
                 ->where('date', $today)->first();
+
+            $attendanceToday->file_information = URL::to($attendanceToday->file_information);
 
             if ($attendanceToday == null) {
                 return response()->json([
