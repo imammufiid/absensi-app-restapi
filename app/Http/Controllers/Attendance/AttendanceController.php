@@ -46,20 +46,7 @@ class AttendanceController extends Controller
             ->orderBy('date', 'DESC')
             ->get();
 
-        foreach ($dataAttendance as $key => $value) {
-            $dataAttendance[$key]->file_information = URL::to($value->file_information);
-        }
-
-        if ($dataAttendance != null) {
-            return response()->json([
-                "meta" => object_meta(
-                    Response::HTTP_OK,
-                    "success",
-                    "List of Data Attendance"
-                ),
-                "data" => $dataAttendance
-            ], Response::HTTP_OK);
-        } else {
+        if ($dataAttendance == null) {
             return response()->json([
                 "meta" => object_meta(
                     Response::HTTP_NOT_FOUND,
@@ -69,6 +56,21 @@ class AttendanceController extends Controller
                 "data" => null
             ], Response::HTTP_NOT_FOUND);
         }
+
+        foreach ($dataAttendance as $key => $value) {
+            if ($dataAttendance[$key]->file_information != null) {
+                $dataAttendance[$key]->file_information = URL::to($value->file_information);
+            }
+        }
+
+        return response()->json([
+            "meta" => object_meta(
+                Response::HTTP_OK,
+                "success",
+                "List of Data Attendance"
+            ),
+            "data" => $dataAttendance
+        ], Response::HTTP_OK);
     }
 
     /**
@@ -102,8 +104,6 @@ class AttendanceController extends Controller
             $attendanceToday = Attendence::where('user_id', $idEmploye)
                 ->where('date', $today)->first();
 
-            $attendanceToday->file_information = URL::to($attendanceToday->file_information);
-
             if ($attendanceToday == null) {
                 return response()->json([
                     'meta' => object_meta(
@@ -114,6 +114,77 @@ class AttendanceController extends Controller
                     'data' => null
                 ], Response::HTTP_OK);
             } else {
+                if ($attendanceToday->file_information != null) {
+                    $attendanceToday->file_information = URL::to($attendanceToday->file_information);
+                }
+
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_OK,
+                        "success",
+                        "Attendance Today"
+                    ),
+                    'data' => $attendanceToday
+                ], Response::HTTP_OK);
+            }
+        } catch (Throwable $e) {
+            $data = [
+                "error" => $e
+            ];
+            return response()->json([
+                "meta" => object_meta(
+                    Response::HTTP_EXPECTATION_FAILED,
+                    "error",
+                    "Error Handling"
+                ),
+                "data" => $data
+            ], Response::HTTP_EXPECTATION_FAILED);
+        }
+    }
+
+    /**
+     * Display the specified data attendance.
+     *
+     * @param  \App\Attendence  $attendence
+     * @return \Illuminate\Http\Response
+     */
+    public function showByIdAttendance(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'attendance_id' => "required",
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_BAD_REQUEST,
+                        "failed",
+                        "Failed"
+                    ),
+                    'data' => $validator->errors()
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            $id = request("attendance_id");
+
+            $attendanceToday = Attendence::where('id', $id)->first();
+
+            if ($attendanceToday == null) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_NOT_FOUND,
+                        "failed",
+                        "Not Found"
+                    ),
+                    'data' => null
+                ], Response::HTTP_OK);
+            } else {
+                if ($attendanceToday->file_information != null) {
+                    $attendanceToday->file_information = URL::to($attendanceToday->file_information);
+                }
+
                 return response()->json([
                     'meta' => object_meta(
                         Response::HTTP_OK,

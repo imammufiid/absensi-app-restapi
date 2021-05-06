@@ -30,6 +30,7 @@ Route::group([
     Route::post("/scan", 'AttendanceController@scan');
     Route::post("/validate", 'AttendanceController@validateAttendance');
     Route::get("/show", 'AttendanceController@show');
+    Route::get("/attendance", 'AttendanceController@showByIdAttendance');
 });
 
 Route::group([
