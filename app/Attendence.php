@@ -12,6 +12,6 @@ class Attendence extends Model
      * @var array
      */
     protected $fillable = [
-        'user_id', 'date', 'time_comes', 'time_gohome'
+        'user_id', 'date', 'time_comes', 'time_gohome', 'attendance_type', 'information', 'file_information'
     ];
 }
