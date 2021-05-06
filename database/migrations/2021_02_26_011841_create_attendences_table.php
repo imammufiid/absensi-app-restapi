@@ -16,9 +16,12 @@ class CreateAttendencesTable extends Migration
         Schema::create('attendences', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger("user_id");
+            $table->tinyInteger("attendance_type");
             $table->string("date");
             $table->string("time_comes");
             $table->string("time_gohome");
+            $table->text("information");
+            $table->string("file_information")->nullable();
             $table->timestamps();
 
             $table->foreign("user_id")->references("id")->on("users");
