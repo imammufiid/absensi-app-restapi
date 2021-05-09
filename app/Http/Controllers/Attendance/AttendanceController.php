@@ -502,7 +502,7 @@ class AttendanceController extends Controller
 
             $id = request("attendance_id");
 
-            $locationDetail = LocationDetail::where('id', $id)->first();
+            $locationDetail = LocationDetail::where('attendance_id', $id)->first();
 
             if ($locationDetail == null) {
                 return response()->json([
@@ -588,7 +588,7 @@ class AttendanceController extends Controller
                         "failed",
                         "Attendance failed validation"
                     ),
-                    "data" => $attendanceUpdate
+                    "data" => null
                 ], Response::HTTP_OK);
             }
             return response()->json([
@@ -597,7 +597,7 @@ class AttendanceController extends Controller
                     "success",
                     "Attendance has been validation"
                 ),
-                "data" => $attendanceUpdate
+                "data" => $data
             ], Response::HTTP_OK);
         } catch (Throwable $e) {
             $data = [
