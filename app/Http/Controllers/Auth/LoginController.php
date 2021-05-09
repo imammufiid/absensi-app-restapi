@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\User;
+use App\UserSessions;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -28,33 +29,57 @@ class LoginController extends Controller
         if ($validation->fails()) {
             return response()->json([
                 'meta' => object_meta(
-                    Response::HTTP_BAD_REQUEST, 
-                    "failed", 
-                    "Failed"),
+                    Response::HTTP_BAD_REQUEST,
+                    "failed",
+                    "Failed"
+                ),
                 'data' => $validation->errors()
             ], Response::HTTP_BAD_REQUEST);
         }
 
-        if (!$token =  Auth::attempt(request()->only('email', 'password'))) {
-            $data['is_success'] = 'false';
+        // check session
+        $session = UserSessions::where("email", request("email"))->first();
+        if ($session != null && $session->is_login == 1) {
+            // $device = json_decode($session->detail_login);
             return response()->json([
                 'meta' => object_meta(
-                    Response::HTTP_UNAUTHORIZED, 
-                    "failed", 
-                    "Login Failed"),
-                'data' => $data
-            ], Response::HTTP_UNAUTHORIZED);
-        }
+                    Response::HTTP_FORBIDDEN,
+                    "failed",
+                    "Akun anda masih login pada device lain"
+                ),
+                'data' => null
+            ], Response::HTTP_FORBIDDEN);
+        } else {
+            if (!$token =  Auth::attempt(request()->only('email', 'password'))) {
+                $data['is_success'] = 'false';
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_UNAUTHORIZED,
+                        "failed",
+                        "Login Failed"
+                    ),
+                    'data' => $data
+                ], Response::HTTP_UNAUTHORIZED);
+            }
 
-        $user = User::where('email', request('email'))->first();
-        $data = json_decode($user, true);
-        $data['token'] = $token;
+            $user = User::where('email', request('email'))->first();
+            $data = json_decode($user, true);
+            $data['token'] = $token;
+
+            UserSessions::create([
+                "user_id"   => $user->id,
+                "email"     => $user->email,
+                "detail_login"  => "",
+                "is_login"  => 1
+            ]);
+        }
 
         return response()->json([
             'meta' => object_meta(
-                Response::HTTP_OK, 
-                "success", 
-                "Login Successfuly"),
+                Response::HTTP_OK,
+                "success",
+                "Login Successfuly"
+            ),
             'data' => $data
         ], Response::HTTP_OK);
     }
