@@ -15,10 +15,10 @@ use Throwable;
 
 class AttendanceController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:api');
-    }
+    // public function __construct()
+    // {
+    //     $this->middleware('auth:api');
+    // }
 
     /**
      * Display a listing of the data attedance.
@@ -472,6 +472,74 @@ class AttendanceController extends Controller
                 ),
                 "data" => $data
             ], Response::HTTP_CONFLICT);
+        }
+    }
+
+    /**
+     * Display the specified data attendance.
+     *
+     * @param  \App\Attendence  $attendence
+     * @return \Illuminate\Http\Response
+     */
+    public function getLocationAttendance(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'attendance_id' => "required",
+            ]);
+
+            if ($validator->fails()) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_BAD_REQUEST,
+                        "failed",
+                        "Failed"
+                    ),
+                    'data' => $validator->errors()
+                ], Response::HTTP_BAD_REQUEST);
+            }
+
+
+            $id = request("attendance_id");
+
+            $locationDetail = LocationDetail::where('id', $id)->first();
+
+            if ($locationDetail == null) {
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_NOT_FOUND,
+                        "failed",
+                        "Not Found"
+                    ),
+                    'data' => null
+                ], Response::HTTP_OK);
+            } else {
+                if ($locationDetail->lbs != null) {
+                    $distance = (float) ($locationDetail->lbs * 1.609344) * 1000;
+                    $locationDetail->lbs = number_format($distance, 2, '.', ',');
+                }
+
+                return response()->json([
+                    'meta' => object_meta(
+                        Response::HTTP_OK,
+                        "success",
+                        "Attendance Location Detail"
+                    ),
+                    'data' => $locationDetail
+                ], Response::HTTP_OK);
+            }
+        } catch (Throwable $e) {
+            $data = [
+                "error" => $e
+            ];
+            return response()->json([
+                "meta" => object_meta(
+                    Response::HTTP_EXPECTATION_FAILED,
+                    "error",
+                    "Error Handling"
+                ),
+                "data" => $data
+            ], Response::HTTP_EXPECTATION_FAILED);
         }
     }
 

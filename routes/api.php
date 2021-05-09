@@ -31,6 +31,7 @@ Route::group([
     Route::post("/validate", 'AttendanceController@validateAttendance');
     Route::get("/show", 'AttendanceController@show');
     Route::get("/attendance", 'AttendanceController@showByIdAttendance');
+    Route::get("/location", 'AttendanceController@getLocationAttendance');
 });
 
 Route::group([
