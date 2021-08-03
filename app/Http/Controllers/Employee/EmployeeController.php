@@ -33,7 +33,7 @@ class EmployeeController extends Controller
 					  "Failed for Attendance"
 				 ),
 				 "data" => null
-			], Response::HTTP_NOT_FOUND);
+			], Response::HTTP_OK);
 	  }
 	}
 }

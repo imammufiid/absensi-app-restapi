@@ -34,7 +34,7 @@ class LoginController extends Controller
                     "Failed"
                 ),
                 'data' => $validation->errors()
-            ], Response::HTTP_BAD_REQUEST);
+            ], Response::HTTP_OK);
         }
 
         // check session
@@ -48,7 +48,7 @@ class LoginController extends Controller
                     "Akun anda masih login pada device lain"
                 ),
                 'data' => null
-            ], Response::HTTP_FORBIDDEN);
+            ], Response::HTTP_OK);
         } else {
             if (!$token =  Auth::attempt(request()->only('email', 'password'))) {
                 $data['is_success'] = 'false';
@@ -56,10 +56,10 @@ class LoginController extends Controller
                     'meta' => object_meta(
                         Response::HTTP_UNAUTHORIZED,
                         "failed",
-                        "Login Failed"
+                        "Username/password salah"
                     ),
                     'data' => $data
-                ], Response::HTTP_UNAUTHORIZED);
+                ], Response::HTTP_OK);
             }
 
             $user = User::where('email', request('email'))->first();

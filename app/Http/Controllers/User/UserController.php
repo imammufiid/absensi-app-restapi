@@ -35,7 +35,7 @@ class UserController extends Controller
                         "Failed Bad Request"
                     ),
                     'data' => null
-                ], Response::HTTP_BAD_REQUEST);
+                ], Response::HTTP_OK);
             } else {
                 $user = User::where("id", $userId)->first();
 
@@ -102,7 +102,7 @@ class UserController extends Controller
                     "Failed Bad Request"
                 ),
                 'data' => null
-            ], Response::HTTP_BAD_REQUEST);
+            ], Response::HTTP_OK);
         } else {
             $pathImg = $_SERVER['DOCUMENT_ROOT'] . "/img/image_user/";
 
@@ -164,7 +164,7 @@ class UserController extends Controller
                         "Failed Update Data"
                     ),
                     'data' => null
-                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+                ], Response::HTTP_OK);
             }
         }
     }

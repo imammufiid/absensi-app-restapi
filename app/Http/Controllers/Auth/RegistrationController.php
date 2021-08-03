@@ -47,7 +47,7 @@ class RegistrationController extends Controller
                     "Failed"
                 ),
                 'data' => $validation->errors()
-            ], Response::HTTP_BAD_REQUEST);
+            ], Response::HTTP_OK);
         }
         $nameOfCode = "KR" . "_" . request('nik') . "_" . $this->_generateRandomString();
 
