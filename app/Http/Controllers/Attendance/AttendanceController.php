@@ -27,24 +27,30 @@ class AttendanceController extends Controller
      */
     public function index()
     {
-        $validator = Validator::make(request()->all(), [
-            "user_id"    => "required"
-        ]);
+        // $validator = Validator::make(request()->all(), [
+        //     "user_id"    => "required"
+        // ]);
 
-        if ($validator->fails()) {
-            return response()->json([
-                'meta' => object_meta(
-                    Response::HTTP_BAD_REQUEST,
-                    "failed",
-                    "Failed"
-                ),
-                'data' => $validator->errors()
-            ], Response::HTTP_BAD_REQUEST);
+        // if ($validator->fails()) {
+        //     return response()->json([
+        //         'meta' => object_meta(
+        //             Response::HTTP_BAD_REQUEST,
+        //             "failed",
+        //             "Failed"
+        //         ),
+        //         'data' => $validator->errors()
+        //     ], Response::HTTP_OK);
+        // }
+
+        if (request("is_admin") != null) {
+            $dataAttendance = Attendence::orderBy('date', 'DESC')
+                ->get();
+        } else {
+            $dataAttendance = Attendence::where("user_id", request("user_id"))
+                ->orderBy('date', 'DESC')
+                ->get();
         }
 
-        $dataAttendance = Attendence::where("user_id", request("user_id"))
-            ->orderBy('date', 'DESC')
-            ->get();
 
         if ($dataAttendance == null) {
             return response()->json([
@@ -94,7 +100,7 @@ class AttendanceController extends Controller
                         "Failed"
                     ),
                     'data' => $validator->errors()
-                ], Response::HTTP_BAD_REQUEST);
+                ], Response::HTTP_OK);
             }
 
 
@@ -163,7 +169,7 @@ class AttendanceController extends Controller
                         "Failed"
                     ),
                     'data' => $validator->errors()
-                ], Response::HTTP_BAD_REQUEST);
+                ], Response::HTTP_OK);
             }
 
 
@@ -236,7 +242,7 @@ class AttendanceController extends Controller
                         "Failed"
                     ),
                     'data' => $validator->errors()
-                ], Response::HTTP_BAD_REQUEST);
+                ], Response::HTTP_OK);
             }
 
             // data request
@@ -248,7 +254,7 @@ class AttendanceController extends Controller
             $currentDate = date('d-m-Y');
 
             // check when come or go home
-            $checkerAttendance = Attendence::where('date', $currentDate)->first();
+            $checkerAttendance = Attendence::where('date', $currentDate)->where("user_id", $idEmploye)->first();
 
             // check attendance type
             switch ($attendanceType) {
@@ -265,7 +271,7 @@ class AttendanceController extends Controller
                                 "Qr Code Not Valid"
                             ),
                             "data" => null
-                        ], Response::HTTP_BAD_REQUEST);
+                        ], Response::HTTP_OK);
                     }
 
                     // calculate distance location employee and office
@@ -279,7 +285,7 @@ class AttendanceController extends Controller
                                 "Jarak anda masih " . number_format($distance, 1, '.', ',') . " M dari kantor"
                             ),
                             "data" => null
-                        ], Response::HTTP_BAD_REQUEST);
+                        ], Response::HTTP_OK);
                     }
 
                     // check when come or go home
@@ -327,7 +333,7 @@ class AttendanceController extends Controller
                                     "Anda Sudah Absen Pulang"
                                 ),
                                 "data" => null
-                            ], Response::HTTP_BAD_REQUEST);
+                            ], Response::HTTP_OK);
                         }
 
                         // scan for attendance go home
@@ -356,7 +362,7 @@ class AttendanceController extends Controller
                                     "Failed for Go Home Attendance"
                                 ),
                                 "data" => $attendance
-                            ], Response::HTTP_BAD_REQUEST);
+                            ], Response::HTTP_OK);
                         }
                     }
 
@@ -457,7 +463,7 @@ class AttendanceController extends Controller
                             "Request Not Valid"
                         ),
                         "data" => null
-                    ], Response::HTTP_BAD_REQUEST);
+                    ], Response::HTTP_OK);
                     break;
             }
         } catch (Throwable $e) {
@@ -496,7 +502,7 @@ class AttendanceController extends Controller
                         "Failed"
                     ),
                     'data' => $validator->errors()
-                ], Response::HTTP_BAD_REQUEST);
+                ], Response::HTTP_OK);
             }
 
 
@@ -561,7 +567,7 @@ class AttendanceController extends Controller
                         "Failed"
                     ),
                     'data' => $validator->errors()
-                ], Response::HTTP_BAD_REQUEST);
+                ], Response::HTTP_OK);
             }
 
             // * get attendance by id
