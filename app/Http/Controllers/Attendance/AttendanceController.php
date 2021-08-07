@@ -43,11 +43,15 @@ class AttendanceController extends Controller
         // }
 
         if (request("is_admin") != null) {
-            $dataAttendance = Attendence::orderBy('date', 'DESC')
+            $dataAttendance = Attendence::whereRaw('created_at >=DATE_ADD(NOW(),INTERVAL -1 MONTH)')
+                ->orderBy('date', 'ASC')
+                ->orderBy('time_comes', 'ASC')
                 ->get();
         } else {
-            $dataAttendance = Attendence::where("user_id", request("user_id"))
-                ->orderBy('date', 'DESC')
+            $dataAttendance = Attendence::whereRaw('created_at >=DATE_ADD(NOW(),INTERVAL -1 MONTH)')
+                ->where("user_id", request("user_id"))
+                ->orderBy('date', 'ASC')
+                ->orderBy('time_comes', 'ASC')
                 ->get();
         }
 
