@@ -674,4 +674,44 @@ class AttendanceController extends Controller
             // }
         }
     }
+
+    public function robotAttendance()
+    {
+        $time = time();
+        $listOfNIKEmployee = [];
+        // get date this day
+        $currentDate = date('d-m-Y');
+
+        $employee = User::where('is_admin', 0)->get();
+
+
+        foreach ($employee as $key => $value) {
+            $idEmployee = $employee[$key]->id;
+            $checkerAttendance = Attendence::where('date', $currentDate)->where("user_id", $idEmployee)->first();
+
+            if ($checkerAttendance == null) {
+                $attendance = Attendence::create([
+                    "user_id"       => $idEmployee,
+                    "date"          => date("d-m-Y", $time),
+                    "time_comes"    => "--:--:--",
+                    "time_gohome"   => "--:--:--",
+                    "attendance_type"   => 0,
+                    "information"   => "Tidak Absen Hari ini"
+                ]);
+
+                if ($attendance->id != null || !empty($attendance->id)) {
+                    array_push($listOfNIKEmployee, $employee[$key]->nik);
+                }
+            }
+        }
+
+        return Response()->json([
+            "meta" => object_meta(
+                Response::HTTP_CREATED,
+                "success",
+                "Hari " . $currentDate . ". Total Karyawan tidak absen " . sizeof($listOfNIKEmployee)
+            ),
+            "data" => $listOfNIKEmployee
+        ], Response::HTTP_CREATED);
+    }
 }

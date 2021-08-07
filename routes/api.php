@@ -32,6 +32,7 @@ Route::group([
     Route::get("/show", 'AttendanceController@show');
     Route::get("/attendance", 'AttendanceController@showByIdAttendance');
     Route::get("/location", 'AttendanceController@getLocationAttendance');
+    Route::get("/robot", 'AttendanceController@robotAttendance');
 });
 
 Route::group([
