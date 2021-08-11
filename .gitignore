@@ -1,7 +1,8 @@
 /node_modules
 /public/hot
 /public/storage
-/public/img
+/public/img/image_user
+/public/img/file_attendance
 /storage/*.key
 /vendor
 .env
