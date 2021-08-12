@@ -71,6 +71,17 @@ class AttendanceController extends Controller
             if ($dataAttendance[$key]->file_information != null) {
                 $dataAttendance[$key]->file_information = URL::to($value->file_information);
             }
+
+            $dataUser = User::where("id", $dataAttendance[$key]->user_id)->first();
+            
+            if ($dataUser != null) {
+                // array push
+                $userData = [
+                    "username" => $dataUser->name,
+                    "email" => $dataUser->email,
+                ];
+                $dataAttendance[$key]['user_data'] = $userData;
+            }
         }
 
         return response()->json([
@@ -385,7 +396,7 @@ class AttendanceController extends Controller
                         ], Response::HTTP_OK);
                     }
                     $information = request("information");
-                    
+
                     $attendance = Attendence::create([
                         "user_id"       => $idEmploye,
                         "date"          => date("d-m-Y", $time),
