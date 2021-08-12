@@ -385,6 +385,7 @@ class AttendanceController extends Controller
                         ], Response::HTTP_OK);
                     }
                     $information = request("information");
+                    
                     $attendance = Attendence::create([
                         "user_id"       => $idEmploye,
                         "date"          => date("d-m-Y", $time),
@@ -392,6 +393,13 @@ class AttendanceController extends Controller
                         "time_gohome"   => 0,
                         "attendance_type"   => $attendanceType,
                         "information"   => $information
+                    ]);
+
+                    $attendanceLocation = LocationDetail::create([
+                        'attendance_id' => $attendance->id,
+                        'latitude'  => request('latitude'),
+                        'longitude'  => request('longitude'),
+                        'lbs'  => 0,
                     ]);
 
                     return response()->json([
