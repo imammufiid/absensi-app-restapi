@@ -77,7 +77,7 @@ class AttendanceController extends Controller
             if ($dataUser != null) {
                 // array push
                 $userData = [
-                    "username" => $dataUser->name,
+                    "name" => $dataUser->name,
                     "email" => $dataUser->email,
                 ];
                 $dataAttendance[$key]['user_data'] = $userData;
