@@ -304,8 +304,8 @@ class AttendanceController extends Controller
                     }
 
                     // check when come or go home
-                    $checkerAttendance = Attendence::where('date', $currentDate)
-                        ->first();
+                    // $checkerAttendance = Attendence::where('date', $currentDate)
+                    //     ->first();
 
                     if ($checkerAttendance == null) {
                         // is comming
