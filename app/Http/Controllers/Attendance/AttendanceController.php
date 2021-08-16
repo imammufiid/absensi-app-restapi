@@ -42,7 +42,7 @@ class AttendanceController extends Controller
         //     ], Response::HTTP_OK);
         // }
 
-        if (request("is_admin") != null) {
+        if (request("is_admin") == 1) {
             $dataAttendance = Attendence::whereRaw('created_at >=DATE_ADD(NOW(),INTERVAL -1 MONTH)')
                 ->orderBy('date', 'ASC')
                 ->orderBy('time_comes', 'ASC')
@@ -56,7 +56,7 @@ class AttendanceController extends Controller
         }
 
 
-        if ($dataAttendance == null) {
+        if ($dataAttendance->isEmpty()) {
             return response()->json([
                 "meta" => object_meta(
                     Response::HTTP_NOT_FOUND,
@@ -73,7 +73,7 @@ class AttendanceController extends Controller
             }
 
             $dataUser = User::where("id", $dataAttendance[$key]->user_id)->first();
-            
+
             if ($dataUser != null) {
                 // array push
                 $userData = [
@@ -732,5 +732,33 @@ class AttendanceController extends Controller
             ),
             "data" => $listOfNIKEmployee
         ], Response::HTTP_CREATED);
+    }
+
+    public function success()
+    {
+        return Response()->json([
+            "id" => "1",
+            "name" => "Imam",
+            "avatar" => "avatar"
+        ], Response::HTTP_OK);
+    }
+
+    // public function error() {
+    //     return Response()->json([
+    //         "status" => "400",
+    //         "message" => "error brooo"
+    //     ], Response::HTTP_BAD_REQUEST);
+    // }
+
+
+    public function error()
+    {
+        return Response()->json([
+            "meta" => object_meta(
+                Response::HTTP_BAD_REQUEST,
+                "failed",
+                "Anda Sudah Absen"
+            )
+        ], Response::HTTP_BAD_REQUEST);
     }
 }
